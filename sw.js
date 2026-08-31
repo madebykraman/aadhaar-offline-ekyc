@@ -1,5 +1,27 @@
-const CACHE='ekyc-viewer-v5';
-const transform=async response=>{if(!response||!response.ok)return response;const ct=response.headers.get('content-type')||'';if(!ct.includes('text/html'))return response;let html=await response.text();const old="const expected=(flags&8)?((u16(bytes,lp+6)>>>8)&255):((crc>>>24)&255);if(check!==expected)throw Error('Incorrect Share Code or unsupported ZIP encryption.');";const fixed="const expected=(crc>>>24)&255;const timeCheck=bytes[lo+11];if(check!==expected&&check!==timeCheck)throw Error('Incorrect Share Code.');";if(html.includes(old))html=html.replace(old,fixed);return new Response(html,{headers:{'Content-Type':'text/html;charset=UTF-8'}})};
-self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['./','./index.html','./manifest.webmanifest','./sw.js'])).then(()=>self.skipWaiting())));
-self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
-self.addEventListener('fetch',e=>e.respondWith((async()=>{const cached=await caches.match(e.request);const source=cached||await fetch(e.request);return transform(source)})()));
+const CACHE = 'ekyc-viewer-v6';
+const ASSETS = ['./', './index.html', './manifest.webmanifest', './sw.js', './icon.svg'];
+
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE)
+      .then(cache => cache.addAll(ASSETS))
+      .then(() => self.skipWaiting())
+  );
+});
+
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys()
+      .then(keys => Promise.all(
+        keys.filter(key => key !== CACHE).map(key => caches.delete(key))
+      ))
+      .then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET') return;
+  event.respondWith(
+    caches.match(event.request).then(cached => cached || fetch(event.request))
+  );
+});
