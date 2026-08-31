@@ -1,0 +1,1 @@
+{"name":"Aadhaar Offline eKYC Viewer","short_name":"eKYC Viewer","start_url":"./","scope":"./","display":"standalone","background_color":"#08090c","theme_color":"#08090c","description":"Private local viewer for Aadhaar Offline eKYC files","icons":[{"src":"./icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any"}]}

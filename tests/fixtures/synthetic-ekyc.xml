@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Synthetic fixture only. It contains no real Aadhaar holder information. -->
+<OfflinePaperlessKyc referenceId="TEST-REFERENCE-0001">
+  <UidData>
+    <Poi name="Aarav Example" dob="1990-01-01" gender="M" m="synthetic-mobile-hash" e="synthetic-email-hash"/>
+    <Poa house="42" street="Example Road" loc="Demo Colony" vtc="Test City" dist="Sample District" state="Example State" pc="000000" po="Test Office"/>
+  </UidData>
+</OfflinePaperlessKyc>
