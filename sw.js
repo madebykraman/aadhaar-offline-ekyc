@@ -1,22 +1,7 @@
-const CACHE='ekyc-viewer-v8';
+const CACHE='ekyc-viewer-v9';
 const ASSETS=['./','./index.html','./manifest.webmanifest','./sw.js','./icon.svg'];
-
-self.addEventListener('install',event=>{
-  event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));
-});
-
-self.addEventListener('activate',event=>{
-  event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));
-});
-
-self.addEventListener('fetch',event=>{
-  if(event.request.method!=='GET')return;
-  const url=new URL(event.request.url);
-  if(url.origin!==self.location.origin)return;
-  event.respondWith(
-    fetch(event.request).then(response=>{
-      if(response.ok){const copy=response.clone();caches.open(CACHE).then(cache=>cache.put(event.request,copy)).catch(()=>{});}
-      return response;
-    }).catch(()=>caches.match(event.request).then(cached=>cached||new Response('Offline',{status:503,statusText:'Offline'})))
-  );
-});
+const UI=`<style id="ekyc-ui">:root{--bg:#f5f5f7;--card:#fff;--text:#111;--muted:#6e6e73;--line:#d8d8dc;--blue:#007aff;--green:#34c759;--red:#ff3b30}*{box-sizing:border-box}body{background:var(--bg)!important;color:var(--text)!important;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif!important}main{max-width:640px!important;padding:calc(env(safe-area-inset-top) + 34px) 20px calc(env(safe-area-inset-bottom) + 48px)!important}.hero{padding:0 0 24px!important}.eyebrow{font-size:12px!important;font-weight:700!important;letter-spacing:.7px!important;margin:0 0 8px!important}.hero h1{font-size:42px!important;line-height:1!important;letter-spacing:-2px!important;margin:0 0 12px!important}.hero .muted{font-size:17px!important;line-height:1.42!important}.privacy{padding:18px!important;border-radius:22px!important;margin:0 0 14px!important;background:rgba(255,255,255,.88)!important;box-shadow:none!important}.privacy b{font-size:18px!important;margin-bottom:5px!important}.privacy>.muted{font-size:15px!important;line-height:1.4!important}.privacy .pill{display:flex!important;margin-top:12px!important;font-size:13px!important;color:var(--green)!important}.privacy .pill span{font-size:inherit!important}.actions{margin-top:14px!important}.button{min-height:56px!important;border-radius:17px!important;font-size:17px!important;font-weight:700!important}.primary{background:var(--blue)!important}.secondary{background:#fff!important}.status{font-size:13px!important;line-height:1.35!important;margin:12px 4px!important;min-height:18px!important}.profile{margin:24px 0 14px!important;padding:18px!important;border-radius:26px!important;background:#fff!important;box-shadow:0 1px 2px rgba(0,0,0,.03)!important}.photo{width:104px!important;height:128px!important;border-radius:16px!important}.profile h2{font-size:27px!important;letter-spacing:-.8px!important}.profile p{font-size:15px!important}.grid{display:block!important}.field{margin:10px 0!important;padding:18px!important;border-radius:20px!important;background:#fff!important;box-shadow:none!important}.label{font-size:11px!important;letter-spacing:.8px!important;margin-bottom:8px!important}.value{font-size:18px!important;line-height:1.45!important}.field-actions{margin-top:9px!important}.mini{font-size:14px!important;font-weight:600!important}.tools{display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important;margin-top:14px!important}.raw{margin-top:14px!important;border-radius:20px!important;padding:17px!important;background:#fff!important}.raw summary{font-size:16px!important}.footer{font-size:12px!important;line-height:1.5!important;margin:16px 4px!important}@media(max-width:500px){main{padding-left:16px!important;padding-right:16px!important}.hero h1{font-size:40px!important}.hero .muted{font-size:17px!important}.profile{padding:16px!important}.photo{width:92px!important;height:116px!important}.tools{grid-template-columns:1fr!important}}@media(prefers-color-scheme:dark){:root{--bg:#000;--card:#1c1c1e;--text:#f5f5f7;--muted:#98989d;--line:#38383a}.privacy,.field,.profile,.raw,.secondary{background:#1c1c1e!important;border-color:#38383a!important}.zip-panel{background:#1c1c1e!important}.zip-panel input{background:#2c2c2e!important;color:#fff!important;border-color:#48484a!important}.raw pre{color:#98989d!important}}</style>`;
+async function styleHTML(response){if(!response||!response.ok)return response;const type=response.headers.get('content-type')||'';if(!type.includes('text/html'))return response;let html=await response.text();if(!html.includes('id="ekyc-ui"'))html=html.replace('</head>',UI+'</head>');return new Response(html,{status:response.status,statusText:response.statusText,headers:{'Content-Type':'text/html;charset=UTF-8','Cache-Control':'no-store'}})}
+self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));
+self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
+self.addEventListener('fetch',event=>{if(event.request.method!=='GET')return;const url=new URL(event.request.url);if(url.origin!==self.location.origin)return;event.respondWith(fetch(event.request).then(r=>{if(r.ok)caches.open(CACHE).then(c=>c.put(event.request,r.clone())).catch(()=>{});return styleHTML(r)}).catch(()=>caches.match(event.request).then(r=>r?styleHTML(r):new Response('Offline',{status:503}))))});
